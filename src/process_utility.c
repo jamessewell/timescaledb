@@ -1439,6 +1439,7 @@ typedef struct HypertableIndexOptions
 	List *attnames;
 	int n_ht_atts;
 	bool ht_hasoid;
+	Oid stop_at_chunk;
 
 	/* Concurrency testing options. */
 #ifdef DEBUG
@@ -1585,6 +1586,7 @@ typedef enum HypertableIndexFlags
 
 static const WithClauseDefinition index_with_clauses[] = {
 	[HypertableIndexFlagMultiTransaction] = {.arg_name = "transaction_per_chunk", .type_id = BOOLOID,},
+	[HypertableIndexFlagStopAtChunk] = {.arg_name = "stop_at_chunk", .type_id = REGCLASSOID,},
 #ifdef DEBUG
 	[HypertableIndexFlagBarrierTable] = {.arg_name = "barrier_table", .type_id = REGCLASSOID,},
 	[HypertableIndexFlagMaxChunks] = {.arg_name = "max_chunks", .type_id = INT4OID, .default_val = Int32GetDatum(-1)},
@@ -1662,6 +1664,8 @@ process_index_start(ProcessUtilityArgs *args)
 
 	info.extended_options.multitransaction =
 		DatumGetBool(parsed_with_clauses[HypertableIndexFlagMultiTransaction].parsed);
+	info.extended_options.stop_at_chunk =
+		DatumGetObjectId(parsed_with_clauses[HypertableIndexFlagStopAtChunk].parsed);
 #ifdef DEBUG
 	info.extended_options.max_chunks =
 		DatumGetInt32(parsed_with_clauses[HypertableIndexFlagMaxChunks].parsed);
